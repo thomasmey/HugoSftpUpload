@@ -1,0 +1,12 @@
+{
+ "sftp": {
+   "username": "username",
+   "password": "password",
+   "hostname": "example.com",
+   "port": 22,
+   "targetdir": "/public_html/"
+ },
+ "hugo": {
+   "publicdir": "C:\\Users\\username\\git\\hugorepo\\public\\"
+ }
+}
