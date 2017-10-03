@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,13 +62,27 @@ public class Uploader implements Runnable {
 		}
 	}
 
-	public void createDirectory(String destination) {
+	private Set<String> alreadyCreatedDirectories = new HashSet<>();
+
+	private void createDirectory(final String destination) {
+		if(alreadyCreatedDirectories.contains(destination))
+			return;
+
 		try {
 			channel.mkdir(destination);
 		} catch (SftpException e) {
-			logger.log(Level.WARNING, "directory {0} already exists on remote side", destination);
+			if("No such file".equals(e.getMessage())) {
+				int i = destination.lastIndexOf('/');
+				if (i >= 0) {
+					createDirectory(destination.substring(0, i));
+				}
+			} else if("File already exists".equals(e.getMessage())) {
+				alreadyCreatedDirectories.add(destination);
+			}
+			logger.log(Level.WARNING, "failed to create directory {0} on remote side: {1}", new Object[] {destination, e.getMessage()});
 		}
 	}
+
 	public static void main(String... args) throws JSchException, FileNotFoundException {
 		String configFile;
 		if(args.length > 0) {
